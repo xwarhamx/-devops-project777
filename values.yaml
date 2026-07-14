@@ -1,0 +1,56 @@
+# Значения по умолчанию для devops-project777.
+# Переопределяются через: helm install -f my-values.yaml
+# или флагами --set key=value
+
+replicaCount: 3
+
+image:
+  repository: xwarhamx/devops-project777
+  pullPolicy: IfNotPresent
+  # Если не указан — берётся Chart.appVersion
+  tag: ""
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+# Порт, на котором Flask-приложение слушает внутри контейнера
+containerPort: 5000
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 5000
+  nodePort: 30080
+
+# Health-check эндпоинты приложения (используются для liveness/readiness проб)
+healthCheck:
+  path: /health
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+
+# Аннотации для автообнаружения метрик Prometheus (prometheus-operator ServiceMonitor
+# не используется здесь намеренно — простой сценарий через scrape-аннотации)
+metrics:
+  enabled: true
+  path: /metrics
+  port: 5000
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

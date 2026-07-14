@@ -1,0 +1,28 @@
+Приложение {{ .Chart.Name }} установлено (релиз: {{ .Release.Name }}).
+
+{{- if eq .Values.service.type "NodePort" }}
+Получить URL приложения в Minikube:
+
+  minikube service {{ include "devops-project777.fullname" . }} --url
+
+Или напрямую через порт ноды:
+
+  export NODE_PORT=$(kubectl get svc {{ include "devops-project777.fullname" . }} -o jsonpath="{.spec.ports[0].nodePort}")
+  export NODE_IP=$(kubectl get nodes -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo "http://$NODE_IP:$NODE_PORT{{ .Values.healthCheck.path }}"
+
+{{- else if eq .Values.service.type "LoadBalancer" }}
+Получить внешний IP (может занять пару минут):
+
+  kubectl get svc {{ include "devops-project777.fullname" . }} -w
+
+{{- else }}
+Проброс порта на локальную машину:
+
+  kubectl port-forward svc/{{ include "devops-project777.fullname" . }} 8080:{{ .Values.service.port }}
+  Затем откройте http://localhost:8080{{ .Values.healthCheck.path }}
+{{- end }}
+
+Проверить статус подов:
+
+  kubectl get pods -l app.kubernetes.io/instance={{ .Release.Name }}
